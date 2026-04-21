@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bình Chọn Thời Gian & Nội Dung Cuộc Họp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Serif', serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+      color: #1a202c;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 36px;
+      max-width: 780px;
+      width: 100%;
+      align-self: flex-start;
+    }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 32px; }
+
+    .header h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #2b4590;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .header p { margin-top: 8px; font-size: 1.1rem; color: #4a5568; text-align: justify; }
+
+    /* ── Form groups ── */
+    .form-group { margin-bottom: 26px; }
+
+    .section-label {
+      font-weight: 700;
+      font-size: 1.27rem;
+      margin-bottom: 4px;
+      color: #2d3748;
+    }
+
+    .required-star { color: #e53e3e; margin-left: 2px; }
+
+    .section-hint {
+      font-size: 1.12rem;
+      color: #2d3748;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    /* ── Text inputs ── */
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 13px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 7px;
+      font-size: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #2d3748;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #2b4590;
+      box-shadow: 0 0 0 3px rgba(43,69,144,0.10);
+    }
+
+    input[type="text"].invalid { border-color: #e53e3e; }
+
+    /* ── Select ── */
+    select {
+      width: 100%;
+      padding: 6px 9px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 1.18rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #2d3748;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { outline: none; border-color: #2b4590; }
+
+    /* ── Error messages ── */
+    .error-msg {
+      color: #e53e3e;
+      font-size: 1.12rem;
+      margin-top: 5px;
+      font-style: italic;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    /* ── Checkbox list for time slots ── */
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.27rem;
+      font-weight: 500;
+      color: #2d3748;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .checkbox-item:hover { border-color: #2b4590; background: #f7f9ff; }
+    .checkbox-item.checked { border-color: #2b4590; background: #eef2ff; }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 17px; height: 17px;
+      accent-color: #2b4590;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ── Grid table for issues / reminders ── */
+    .grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .grid-table tr:not(:last-child) td { border-bottom: 1px solid #e2e8f0; }
+
+    .grid-table td { padding: 7px 10px; vertical-align: middle; }
+
+    .grid-table .td-left {
+      width: 57%;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .cell-inner { display: flex; align-items: center; gap: 7px; }
+
+    .cell-label {
+      font-weight: 700;
+      color: #2d3748;
+      white-space: nowrap;
+      font-size: 1.17rem;
+      flex-shrink: 0;
+      min-width: 78px;
+    }
+
+    .cell-label-right {
+      font-weight: 700;
+      color: #2d3748;
+      white-space: nowrap;
+      font-size: 1.17rem;
+      flex-shrink: 0;
+      min-width: 84px;
+    }
+
+    .cell-inner input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 8px;
+      font-size: 1.18rem;
+      border-radius: 5px;
+    }
+
+    /* ── Select-or-text widget ── */
+    .stw {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stw select, .stw input[type="text"] { flex: 1; min-width: 0; }
+
+    .stw .reset-btn {
+      background: #a0aec0;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      width: 22px;
+      height: 22px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background 0.15s;
+    }
+
+    .stw .reset-btn:hover { background: #718096; }
+    .stw .reset-btn.visible { display: flex; }
+
+    /* ── Submit button ── */
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: #2b4590;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover { background: #1e3270; }
+    .submit-btn:active { transform: scale(0.98); }
+
+    /* ── Success screen ── */
+    #success-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 0 20px;
+    }
+
+    #success-screen .checkmark { font-size: 4.2rem; }
+
+    #success-screen h2 {
+      margin-top: 16px;
+      font-size: 1.65rem;
+      color: #2d3748;
+    }
+
+    .success-detail {
+      margin-top: 14px;
+      color: #4a5568;
+      font-size: 1.23rem;
+      text-align: left;
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 16px 18px;
+      line-height: 1.8;
+    }
+
+    #success-screen .back-btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 10px 28px;
+      background: #2b4590;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1.27rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #success-screen .back-btn:hover { background: #1e3270; }
+
+    @media (max-width: 540px) {
+      .card { padding: 20px 12px; }
+      .header h1 { font-size: 1.25rem; }
+      .grid-table .td-left { width: 50%; }
+      .cell-label, .cell-label-right { min-width: unset; font-size: 1.08rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- ====== FORM ====== -->
+  <div id="form-section">
+    <div class="header">
+      <h1>Bình Chọn thời gian và nội dung<br>cuộc họp toàn thể người phục vụ<br>chương trình sống khỏe thuận tự nhiên<br>(Thanh Lọc Thân Tâm)</h1>
+      <p>Kính gửi toàn thể Anh Chị Em Người Phục Vụ trong Đại Gia Đình Nhà Mình, nếu mọi người có theo dõi các bài đăng trên tường Zalo Thầy Tâm Thành vào Một Ngày Đặc Biệt - 31/12/2024, thì chúng ta có thể hiểu rằng lúc đó Thầy đã Mãn Nguyện Với Cuộc Đời và có thể Ra Đi Mà Không Còn Điều Gì Tiếc Nuối. Đến Một Lúc Phù Hợp thì Điều Này Sẽ Xảy Ra theo như Tâm Nguyện Cuối Cùng Mà Thầy Đã Gửi Gắm. Và Thời Gian Gần Đây, với Những Gì Đã, Đang Diễn Ra thì em đang cảm nhận được rằng Việc Này Đang Đến Gần và Đặc Biệt sau <a href="https://youtu.be/GZiFwbAl5kM" target="_blank" rel="noopener noreferrer" style="color:#2b4590;font-weight:600;">Buổi Gặp Mặt Online Ngày 19/04/2026</a>. Thầy có nhắn đây là Lần Gặp Mặt Cuối và Nhắc Nhở Nhiều về một Chương Trình Sống Khỏe Thuận Tự Nhiên Chính Thống - theo Đúng Tinh Thần thì Người Phục Vụ Cần Có Sự Thực Tập Như Thế Nào. Vì vậy, em Rất Mong Muốn và Đề Xuất Một Cuộc Họp với Tất Cả Anh Chị Em Nhà Mình để nêu ra Những Vấn Đề mà Chúng Ta Đang Gặp Phải và cùng Tìm Hướng Giải Quyết, đồng thời Xem Xét Lại Tất Cả Những Điều mà Thầy Nhắc Nhở về Sự Thực Tập của Người Phục Vụ, để cùng đưa ra Phương Án Thực Tập Phù Hợp. Và cũng vì vậy, em làm Form này để xin thêm Ý Kiến Từ Mọi Người về Thời Gian và Nội Dung Cho Buổi Họp, để Buổi Họp diễn ra Một Cách Hiệu Quả Nhất. Rất mong mọi người Dành Thời Gian để Điền Form và Tham Gia Buổi Họp, Đặc Biệt là những Anh Chị Em nào trong Ban Tổ Chức, Những Người Thân Cận, được Thầy Chỉ Dạy, Nhắc Nhở Thường Xuyên. Để chúng ta có được Sự Đồng Bộ Trong Việc Tổ Chức Các Chương Trình và Cùng Kết Nối Theo Đúng Tinh Thần mà Thầy Đã Truyền Dạy.<br>Em Xin Cảm Ơn ạ! 🙏🙏🙏<br>(Em Khuyến Chánh Niệm - Người Phục Vụ Edit Video kênh Sống Chánh Niệm)</p>
+    </div>
+
+    <form id="vote-form" novalidate>
+
+      <!-- 1. Họ và tên -->
+      <div class="form-group">
+        <div class="section-label">Họ và tên Người Phục Vụ <span class="required-star">*</span></div>
+        <input type="text" id="full-name" placeholder="Nhập họ và tên người phục vụ..." autocomplete="name" />
+        <div class="error-msg" id="err-name">Vui lòng nhập họ và tên của bạn.</div>
+      </div>
+
+      <!-- 2. Bình Chọn Thời Gian Họp -->
+      <div class="form-group">
+        <div class="section-label">Bình Chọn Thời Gian Họp <span class="required-star">*</span></div>
+        <div class="section-hint"> Với tính chất của buổi họp, sẽ có thể mất một buổi trong ngày, anh chị em ưu tiên chọn nhiều lựa chọn để tiện cho việc sắp xếp thời gian. Thời gian họp cụ thể sẽ được thông báo sau ạ.</div>
+        <div class="error-msg" id="err-time">Vui lòng chọn ít nhất một thời gian họp.</div>
+        <div class="checkbox-list">
+          <label class="checkbox-item">
+            <input type="checkbox" name="thoiGian" value="Sáng Chủ Nhật 26/04" />
+            Sáng Chủ Nhật 26/04
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="thoiGian" value="Chiều Chủ Nhật 26/04" />
+            Chiều Chủ Nhật 26/04
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="thoiGian" value="Sáng Chủ Nhật 03/05" />
+            Sáng Chủ Nhật 03/05
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="thoiGian" value="Chiều Chủ Nhật 03/05" />
+            Chiều Chủ Nhật 03/05
+          </label>
+        </div>
+      </div>
+
+      <!-- 3. Các Vấn Đề Hiện tại -->
+      <div class="form-group">
+        <div class="section-label">Các Vấn Đề Hiện tại</div>
+        <div class="section-hint">Rất mong nhà mình ghi lại những vấn đề đã và đang gặp phải khi phục vụ (tính cả ở các bộ phận khác) và lựa chọn tính chất của vấn đề (liên quan đến ai). Vì chỉ khi nhìn thấy được rõ, chúng ta mới có thể cùng nhau sửa nó.</div>
+        <table class="grid-table" id="van-de-table"></table>
+      </div>
+
+      <!-- 4. Những Lời Thầy Nhắc Nhở -->
+      <div class="form-group">
+        <div class="section-label">Những Lời Thầy Nhắc Nhở</div>
+        <div class="section-hint">Rất mong nhà mình ghi lại những lời nhắc nhở thực tập từ Thầy tới các vị trí áp dụng mà mình biết, để chúng ta nắm được rõ nội dung và tinh thần thực tập và cùng nhau đưa ra phương án thực tập phù hợp.</div>
+        <table class="grid-table" id="loi-nhac-table"></table>
+      </div>
+
+      <!-- 5. Ghi chú thêm -->
+      <div class="form-group">
+        <div class="section-label">Ghi chú thêm</div>
+        <div class="section-hint">Nếu mọi người có những đóng góp thêm về form hay nội dung cuộc họp, mình có thể ghi thêm ở đây ạ. VD: Đề xuất về thời gian họp, đề xuất thêm nội dung họp,...</div>
+        <input type="text" id="ghi-chu" placeholder="Nhập ghi chú, góp ý thêm (nếu có)..." />
+      </div>
+
+      <button type="submit" class="submit-btn">Gửi bình chọn</button>
+    </form>
+  </div>
+
+  <!-- ====== SUCCESS ====== -->
+  <div id="success-screen">
+    <div class="checkmark">✅</div>
+    <h2>Bình chọn đã được ghi nhận!</h2>
+    <div class="success-detail" id="success-detail"></div>
+    <button class="back-btn" onclick="resetForm()">Gửi lại</button>
+  </div>
+
+</div>
+
+<script>
+  const TINH_CHAT = ['', 'Cá Nhân', 'Đồng Đội', 'Đội Nhóm', 'Khác'];
+  const AP_DUNG   = ['', 'Tất Cả', 'Điều Phối Viên', 'Huấn Luyện Viên/MC', 'Chăm Sóc Viên',
+                     'Tổ Trưởng Viên', 'Kỹ Thuật Viên', 'Sản Xuất Viên', 'Hậu Cần Viên',
+                     'Tư Vấn Viên', 'Truyền Thông Viên', 'Khác'];
+
+  // Build a select-or-text toggle widget
+  function makeSTW(idSel, idInp, options, placeholder) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'stw';
+
+    const sel = document.createElement('select');
+    sel.id = idSel;
+    options.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt === '' ? '-- Chọn --' : opt;
+      sel.appendChild(o);
+    });
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.id = idInp;
+    inp.placeholder = placeholder;
+    inp.style.display = 'none';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'reset-btn';
+    btn.title = 'Quay lại danh sách';
+    btn.textContent = '✕';
+
+    sel.addEventListener('change', () => {
+      if (sel.value === 'Khác') {
+        sel.style.display = 'none';
+        inp.style.display = '';
+        btn.classList.add('visible');
+        inp.focus();
+      }
+    });
+
+    btn.addEventListener('click', () => {
+      sel.value = '';
+      sel.style.display = '';
+      inp.style.display = 'none';
+      btn.classList.remove('visible');
+      inp.value = '';
+    });
+
+    wrapper.appendChild(sel);
+    wrapper.appendChild(inp);
+    wrapper.appendChild(btn);
+    return wrapper;
+  }
+
+  // Build one table row
+  function buildRow(leftLabel, leftId, leftPlaceholder,
+                    rightLabel, rightIdSel, rightIdInp, options, rightPlaceholder) {
+    const tr = document.createElement('tr');
+
+    // Left cell: text input
+    const tdL = document.createElement('td');
+    tdL.className = 'td-left';
+    const innL = document.createElement('div');
+    innL.className = 'cell-inner';
+    const lblL = document.createElement('span');
+    lblL.className = 'cell-label';
+    lblL.textContent = leftLabel;
+    const inpL = document.createElement('input');
+    inpL.type = 'text';
+    inpL.id = leftId;
+    inpL.placeholder = leftPlaceholder;
+    innL.appendChild(lblL);
+    innL.appendChild(inpL);
+    tdL.appendChild(innL);
+
+    // Right cell: select-or-text
+    const tdR = document.createElement('td');
+    const innR = document.createElement('div');
+    innR.className = 'cell-inner';
+    const lblR = document.createElement('span');
+    lblR.className = 'cell-label-right';
+    lblR.textContent = rightLabel;
+    const stw = makeSTW(rightIdSel, rightIdInp, options, rightPlaceholder);
+    innR.appendChild(lblR);
+    innR.appendChild(stw);
+    tdR.appendChild(innR);
+
+    tr.appendChild(tdL);
+    tr.appendChild(tdR);
+    return tr;
+  }
+
+  // Build Các Vấn Đề table (10 rows)
+  (function() {
+    const table = document.getElementById('van-de-table');
+    for (let i = 1; i <= 10; i++) {
+      table.appendChild(buildRow(
+        `Vấn đề ${i}:`,   `vande-${i}`,  `Nhập vấn đề ${i}...`,
+        `Tính chất ${i}:`, `tc-sel-${i}`, `tc-inp-${i}`,
+        TINH_CHAT, 'Nhập tính chất khác...'
+      ));
+    }
+  })();
+
+  // Build Lời Thầy Nhắc Nhở table (10 rows)
+  (function() {
+    const table = document.getElementById('loi-nhac-table');
+    for (let i = 1; i <= 10; i++) {
+      table.appendChild(buildRow(
+        `Lời Nhắc ${i}:`, `loinhac-${i}`, `Nhập lời nhắc ${i}...`,
+        `Áp dụng ${i}:`,  `ad-sel-${i}`,  `ad-inp-${i}`,
+        AP_DUNG, 'Nhập đối tượng khác...'
+      ));
+    }
+  })();
+
+  // Checkbox highlight & error clear
+  document.querySelectorAll('.checkbox-item').forEach(item => {
+    item.addEventListener('change', () => {
+      const cb = item.querySelector('input[type="checkbox"]');
+      item.classList.toggle('checked', cb.checked);
+      if (document.querySelectorAll('input[name="thoiGian"]:checked').length > 0) {
+        document.getElementById('err-time').classList.remove('show');
+      }
+    });
+  });
+
+  // Get value from a STW widget
+  function getSTW(idSel, idInp) {
+    const sel = document.getElementById(idSel);
+    const inp = document.getElementById(idInp);
+    if (!sel || !inp) return '';
+    return sel.style.display === 'none' ? inp.value.trim() : sel.value;
+  }
+
+  // Escape HTML for safe insertion
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // ====== ĐỔI URL NÀY SAU KHI DEPLOY APPS SCRIPT ======
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqvQt_6t81GUPwCZZHSKyIYR-jzBkptHBMEr-3ZJcHxCgPEUBdpYW4iowf0Ds5ry9X/exec';
+  // =====================================================
+
+  const form = document.getElementById('vote-form');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    let valid = true;
+
+    // Validate name
+    const nameVal = document.getElementById('full-name').value.trim();
+    if (!nameVal) {
+      document.getElementById('full-name').classList.add('invalid');
+      document.getElementById('err-name').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('full-name').classList.remove('invalid');
+      document.getElementById('err-name').classList.remove('show');
+    }
+
+    // Validate time selection
+    const times = [...document.querySelectorAll('input[name="thoiGian"]:checked')].map(c => c.value);
+    if (times.length === 0) {
+      document.getElementById('err-time').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('err-time').classList.remove('show');
+    }
+
+    if (!valid) return;
+
+    // Collect issues (skip empty rows)
+    const vanDeData = [];
+    for (let i = 1; i <= 10; i++) {
+      const vd = document.getElementById(`vande-${i}`).value.trim();
+      const tc = getSTW(`tc-sel-${i}`, `tc-inp-${i}`);
+      if (vd || tc) vanDeData.push({ stt: i, vanDe: vd, tinhChat: tc });
+    }
+
+    // Collect reminders (skip empty rows)
+    const loiNhacData = [];
+    for (let i = 1; i <= 10; i++) {
+      const ln = document.getElementById(`loinhac-${i}`).value.trim();
+      const ad = getSTW(`ad-sel-${i}`, `ad-inp-${i}`);
+      if (ln || ad) loiNhacData.push({ stt: i, loiNhac: ln, apDung: ad });
+    }
+
+    const ghiChu = document.getElementById('ghi-chu').value.trim();
+
+    // Format strings for Google Sheet
+    const vanDeStr   = vanDeData.map(d => `${d.stt}. ${d.vanDe}${d.tinhChat ? ' [' + d.tinhChat + ']' : ''}`).join('\n');
+    const loiNhacStr = loiNhacData.map(d => `${d.stt}. ${d.loiNhac}${d.apDung ? ' [' + d.apDung + ']' : ''}`).join('\n');
+
+    const payload = {
+      hoTen:       nameVal,
+      thoiGian:    times.join(', '),
+      vanDe:       vanDeStr,
+      loiNhac:     loiNhacStr,
+      ghiChu:      ghiChu,
+      thoiGianGui: new Date().toLocaleString('vi-VN')
+    };
+
+    const btn = form.querySelector('.submit-btn');
+    btn.textContent = 'Đang gửi...';
+    btn.disabled = true;
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === 'success') {
+        showSuccess(payload, vanDeData, loiNhacData, times);
+      } else {
+        alert('Gửi thất bại: ' + (data.error || 'Lỗi không xác định'));
+      }
+    })
+    .catch(() => {
+      alert('Không thể kết nối. Vui lòng kiểm tra lại kết nối mạng.');
+    })
+    .finally(() => {
+      btn.textContent = 'Gửi bình chọn';
+      btn.disabled = false;
+    });
+  });
+
+  function showSuccess(p, vanDeData, loiNhacData, times) {
+    let html = `<strong>Người phục vụ:</strong> ${esc(p.hoTen)}<br>`;
+    html += `<strong>Thời gian họp:</strong> ${times.map(esc).join(' &amp; ')}<br>`;
+
+    if (vanDeData.length > 0) {
+      html += `<br><strong>Các Vấn Đề:</strong><br>`;
+      vanDeData.forEach(d => {
+        html += `&nbsp;&nbsp;${d.stt}. ${esc(d.vanDe)}`;
+        if (d.tinhChat) html += ` <em style="color:#718096">[${esc(d.tinhChat)}]</em>`;
+        html += '<br>';
+      });
+    }
+
+    if (loiNhacData.length > 0) {
+      html += `<br><strong>Những Lời Nhắc:</strong><br>`;
+      loiNhacData.forEach(d => {
+        html += `&nbsp;&nbsp;${d.stt}. ${esc(d.loiNhac)}`;
+        if (d.apDung) html += ` <em style="color:#718096">[${esc(d.apDung)}]</em>`;
+        html += '<br>';
+      });
+    }
+
+    if (p.ghiChu) html += `<br><strong>Ghi chú:</strong> ${esc(p.ghiChu)}`;
+
+    document.getElementById('success-detail').innerHTML = html;
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+  }
+
+  function resetForm() {
+    form.reset();
+    document.querySelectorAll('.checkbox-item').forEach(i => i.classList.remove('checked'));
+    document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input[type="text"].invalid').forEach(i => i.classList.remove('invalid'));
+
+    // Reset all STW widgets
+    document.querySelectorAll('.stw').forEach(stw => {
+      const sel = stw.querySelector('select');
+      const inp = stw.querySelector('input');
+      const btn = stw.querySelector('.reset-btn');
+      if (!sel || !inp || !btn) return;
+      sel.value = '';
+      sel.style.display = '';
+      inp.value = '';
+      inp.style.display = 'none';
+      btn.classList.remove('visible');
+    });
+
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('form-section').style.display = 'block';
+  }
+</script>
+</body>
+</html>
