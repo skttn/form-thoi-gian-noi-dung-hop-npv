@@ -6,7 +6,7 @@
   <title>Bình Chọn Thời Gian & Nội Dung Cuộc Họp Người Phục Vụ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -70,7 +70,7 @@
       border: 1.5px solid #cbd5e0;
       border-radius: 7px;
       font-size: 1.25rem;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Noto Sans', monospace;
       color: #2d3748;
       background: #fff;
       transition: border-color 0.2s;
@@ -91,7 +91,7 @@
       border: 1.5px solid #cbd5e0;
       border-radius: 6px;
       font-size: 1.18rem;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Noto Sans', monospace;
       color: #2d3748;
       background: #fff;
       cursor: pointer;
@@ -284,11 +284,37 @@
 
     #success-screen .back-btn:hover { background: #1e3270; }
 
-    @media (max-width: 540px) {
+    @media (max-width: 600px) {
       .card { padding: 20px 12px; }
       .header h1 { font-size: 1.25rem; }
-      .grid-table .td-left { width: 50%; }
-      .cell-label, .cell-label-right { min-width: unset; font-size: 1.08rem; }
+      .cell-label, .cell-label-right { min-width: unset; font-size: 1rem; }
+
+      /* Stack 2 cột thành 1 cột dọc */
+      .grid-table,
+      .grid-table tbody,
+      .grid-table tr,
+      .grid-table td { display: block; width: 100%; }
+
+      .grid-table tr { border-bottom: 2px solid #cbd5e0; }
+      .grid-table tr:last-child { border-bottom: none; }
+      .grid-table tr:not(:last-child) td { border-bottom: none; }
+      .grid-table .td-left {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .grid-table td { padding: 8px 10px; }
+
+      /* Tăng kích thước input/select cho dễ chạm */
+      .cell-inner input[type="text"] {
+        font-size: 1rem;
+        padding: 8px 10px;
+      }
+      .stw select,
+      .stw input[type="text"] {
+        font-size: 1rem;
+        padding: 8px 10px;
+      }
     }
   </style>
 </head>
